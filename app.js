@@ -67,7 +67,46 @@ import puppeteer from "puppeteer";
 
   console.log("Vacantes encontradas:");
   console.log(vacantesArray);
-  console.log(vacantesArray.length)
+  console.log(vacantesArray.length);
 
   await navegador.close();
+
+  for (let i = 0; i < 1; i++) {
+    const navegador = await puppeteer.launch({
+      headless: false,
+      slowMo: 1000,
+    });
+
+    const pagina = await navegador.newPage();
+
+    await pagina.goto(vacantesArray[i]);
+
+    await pagina.waitForSelector("#current-vacancy", {
+      timeout: 60000,
+    });
+
+    const datos = await pagina.evaluate(() => {
+        const titulo = document.querySelector("#current-vacancy > div:nth-child(2) > h1")?.innerText || "No Disponible";
+        const sueldo = document.querySelector("#current-vacancy > div:nth-child(2) > p:nth-of-type(2)")?.innerText || "No Disponible";
+        const ciudadModalidad = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:first-child > p")?.innerText || "No Disponible";
+        const horario = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:nth-child(2) > p")?.innerText || "No Disponible";
+        const idioma = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:nth-child(3) > p")?.innerText || "No Disponible";
+        const requisitos = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(4)")?.innerText?.replace(/\n+/g, ' ') || "No Disponible";
+
+
+
+        return {
+            titulo,
+            sueldo,
+            ciudadModalidad,
+            horario,
+            idioma,
+            requisitos
+        };
+    })
+
+    console.log(datos)
+
+    navegador.close()
+  }
 })();

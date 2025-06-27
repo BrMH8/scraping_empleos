@@ -1,6 +1,11 @@
 import puppeteer from "puppeteer";
+import {preguntarElemento} from "./utils/pregunta.js";
+import {crearArchivoJson} from "./utils/crearArchivoJson.js";
 
 (async () => {
+
+  const busquedaVacante = await preguntarElemento(); 
+
   const navegador = await puppeteer.launch({
     headless: false,
     slowMo: 1000,
@@ -8,16 +13,16 @@ import puppeteer from "puppeteer";
 
   const pagina = await navegador.newPage();
 
-  await pagina.goto("https://hireline.io/mx");
+  await pagina.goto("https://hireline.io/mx", { waitUntil: "networkidle2",timeout: 60000});
 
   await pagina.waitForSelector("#keyword-input", {
     timeout: 60000,
   });
 
   //Ingresar elemento a buscar dinámicamentes
-  await pagina.locator("#keyword-input").fill("nodejs");
-
-  await pagina.locator("#home-search-btn").click();
+  await pagina.click("#keyword-input"); 
+  await pagina.type("#keyword-input", busquedaVacante, { delay: 100 });
+  await pagina.click("#home-search-btn");
 
   await pagina.waitForSelector("#jobs", {
     timeout: 60000,
@@ -71,7 +76,9 @@ import puppeteer from "puppeteer";
 
   await navegador.close();
 
-  for (let i = 0; i < 1; i++) {
+
+  let dataVacantes = []
+  for (let i = 0; i < vacantesArray.length; i++) {
     const navegador = await puppeteer.launch({
       headless: false,
       slowMo: 1000,
@@ -79,7 +86,10 @@ import puppeteer from "puppeteer";
 
     const pagina = await navegador.newPage();
 
-    await pagina.goto(vacantesArray[i]);
+    await pagina.goto(vacantesArray[i], {
+      waitUntil: "networkidle2",
+      timeout: 60000
+    });
 
     await pagina.waitForSelector("#current-vacancy", {
       timeout: 60000,
@@ -105,8 +115,15 @@ import puppeteer from "puppeteer";
         };
     })
 
-    console.log(datos)
+    dataVacantes.push(datos);
+    // console.log(datos)
 
     navegador.close()
   }
+
+  const nombreArchivo = `vacantes-${busquedaVacante}`;
+
+  //Crear archivo JSON
+  crearArchivoJson(dataVacantes, `${nombreArchivo}.json`);
+
 })();

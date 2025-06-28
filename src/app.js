@@ -1,3 +1,5 @@
+import express from "express";
+import cors from "cors";
 import puppeteer from "puppeteer";
 import {preguntarElemento} from "./utils/pregunta.js";
 import {crearArchivoJson} from "./utils/crearArchivoJson.js";
@@ -5,11 +7,32 @@ import {crearArchivoCsv} from "./utils/crearArchivoCsv.js";
 import {crearArchivoExcel} from "./utils/crearArchivoExcel.js";
 import { crearArchivoPdf } from "./utils/crearArchivoPdf.js";
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.get("/api/vacantes", async (req, res) => {
+    const busquedaVacante = req.query.busqueda || "php"; // Valor por defecto si no se proporciona
+    try {
+        const dataVacantes = await buscarVacantes(busquedaVacante);
+        res.status(200).json({ data: dataVacantes, message: "Vacantes encontradas y archivos creados." });
+    } catch (error) { 
+        console.error("Error al buscar vacantes:", error);
+        res.status(500).json({ error: "Error al buscar vacantes." });
+    }
+  }
+)
+
+app.listen(3000, () => {
+    console.log("Servidor corriendo en http://localhost:3000");
+  }
+)
 
 
-(async () => {
 
-  const busquedaVacante = await preguntarElemento(); 
+async function buscarVacantes(busquedaVacante) {
+
+  // const busquedaVacante = await preguntarElemento(); 
 
   const navegador = await puppeteer.launch({
     headless: false,
@@ -138,5 +161,5 @@ import { crearArchivoPdf } from "./utils/crearArchivoPdf.js";
   // crear archivo PDF
   crearArchivoPdf(dataVacantes, `${nombreArchivo}.pdf`);
 
-
-})();
+  return dataVacantes;
+}

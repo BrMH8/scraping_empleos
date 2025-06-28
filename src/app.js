@@ -3,6 +3,7 @@ import {preguntarElemento} from "./utils/pregunta.js";
 import {crearArchivoJson} from "./utils/crearArchivoJson.js";
 import {crearArchivoCsv} from "./utils/crearArchivoCsv.js";
 import {crearArchivoExcel} from "./utils/crearArchivoExcel.js";
+import { crearArchivoPdf } from "./utils/crearArchivoPdf.js";
 
 
 
@@ -134,5 +135,8 @@ import {crearArchivoExcel} from "./utils/crearArchivoExcel.js";
   crearArchivoCsv(dataVacantes, `${nombreArchivo}.csv`);
   //crear archivo Excel
   crearArchivoExcel(dataVacantes, `${nombreArchivo}.xlsx`);
+  // crear archivo PDF
+  crearArchivoPdf(dataVacantes, `${nombreArchivo}.pdf`);
+
 
 })();

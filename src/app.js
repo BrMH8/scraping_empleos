@@ -1,6 +1,10 @@
 import puppeteer from "puppeteer";
 import {preguntarElemento} from "./utils/pregunta.js";
 import {crearArchivoJson} from "./utils/crearArchivoJson.js";
+import {crearArchivoCsv} from "./utils/crearArchivoCsv.js";
+import {crearArchivoExcel} from "./utils/crearArchivoExcel.js";
+
+
 
 (async () => {
 
@@ -125,5 +129,10 @@ import {crearArchivoJson} from "./utils/crearArchivoJson.js";
 
   //Crear archivo JSON
   crearArchivoJson(dataVacantes, `${nombreArchivo}.json`);
+
+  //crear archivo CSV
+  crearArchivoCsv(dataVacantes, `${nombreArchivo}.csv`);
+  //crear archivo Excel
+  crearArchivoExcel(dataVacantes, `${nombreArchivo}.xlsx`);
 
 })();

@@ -78,7 +78,7 @@ async function buscarVacantes(busquedaVacante) {
       await pagina.locator("a[rel='next']").click();
 
       await pagina.waitForSelector("#jobs", {
-        timeout: 60000,
+        timeout: 80000,
       });
 
       const vacantes = await pagina.evaluate(() => {
@@ -116,11 +116,11 @@ async function buscarVacantes(busquedaVacante) {
 
     await pagina.goto(vacantesArray[i], {
       waitUntil: "networkidle2",
-      timeout: 60000
+      timeout: 20000
     });
 
     await pagina.waitForSelector("#current-vacancy", {
-      timeout: 60000,
+      timeout: 20000,
     });
 
     const datos = await pagina.evaluate(() => {

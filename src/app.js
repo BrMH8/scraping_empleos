@@ -35,16 +35,25 @@ async function buscarVacantes(busquedaVacante) {
   // const busquedaVacante = await preguntarElemento(); 
 
   const navegador = await puppeteer.launch({
-    headless: false,
-    slowMo: 1000,
+    headless: true, // Cambiado a true para ocultar la ventana
+    slowMo: 100, // Reducido de 1000ms a 100ms para mayor velocidad
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
   });
 
   const pagina = await navegador.newPage();
 
-  await pagina.goto("https://hireline.io/mx", { waitUntil: "networkidle2",timeout: 60000});
+  await pagina.goto("https://hireline.io/mx", { waitUntil: "domcontentloaded", timeout: 30000});
 
   await pagina.waitForSelector("#keyword-input", {
-    timeout: 60000,
+    timeout: 30000,
   });
 
   //Ingresar elemento a buscar dinámicamentes
@@ -53,7 +62,7 @@ async function buscarVacantes(busquedaVacante) {
   await pagina.click("#home-search-btn");
 
   await pagina.waitForSelector("#jobs", {
-    timeout: 60000,
+    timeout: 30000,
   });
 
   let vacantesArray = await pagina.evaluate(() => {
@@ -78,7 +87,7 @@ async function buscarVacantes(busquedaVacante) {
       await pagina.locator("a[rel='next']").click();
 
       await pagina.waitForSelector("#jobs", {
-        timeout: 80000,
+        timeout: 30000,
       });
 
       const vacantes = await pagina.evaluate(() => {
@@ -106,48 +115,80 @@ async function buscarVacantes(busquedaVacante) {
 
 
   let dataVacantes = []
-  for (let i = 0; i < vacantesArray.length; i++) {
-    const navegador = await puppeteer.launch({
-      headless: false,
-      slowMo: 1000,
-    });
+  
+  // Crear un solo navegador para procesar todas las vacantes
+  const navegadorDetalles = await puppeteer.launch({
+    headless: true, // Oculto
+    slowMo: 50, // Muy rápido
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
+  });
 
-    const pagina = await navegador.newPage();
+  // Procesar vacantes en lotes para mayor velocidad
+  const batchSize = 5; // Procesar 5 vacantes a la vez
+  for (let i = 0; i < vacantesArray.length; i += batchSize) {
+    const batch = vacantesArray.slice(i, i + batchSize);
+    const batchPromises = batch.map(async (vacanteUrl) => {
+      const pagina = await navegadorDetalles.newPage();
+      
+      try {
+        await pagina.goto(vacanteUrl, {
+          waitUntil: "domcontentloaded", // Más rápido que networkidle2
+          timeout: 15000 // Reducido el timeout
+        });
 
-    await pagina.goto(vacantesArray[i], {
-      waitUntil: "networkidle2",
-      timeout: 20000
-    });
+        await pagina.waitForSelector("#current-vacancy", {
+          timeout: 15000,
+        });
 
-    await pagina.waitForSelector("#current-vacancy", {
-      timeout: 20000,
-    });
+        const datos = await pagina.evaluate(() => {
+            const titulo = document.querySelector("#current-vacancy > div:nth-child(2) > h1")?.innerText || "No Disponible";
+            const sueldo = document.querySelector("#current-vacancy > div:nth-child(2) > p:nth-of-type(2)")?.innerText || "No Disponible";
+            const ciudadModalidad = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:first-child > p")?.innerText || "No Disponible";
+            const horario = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:nth-child(2) > p")?.innerText || "No Disponible";
+            const idioma = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:nth-child(3) > p")?.innerText || "No Disponible";
+            const requisitos = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(4)")?.innerText?.replace(/\n+/g, ' ') || "No Disponible";
 
-    const datos = await pagina.evaluate(() => {
-        const titulo = document.querySelector("#current-vacancy > div:nth-child(2) > h1")?.innerText || "No Disponible";
-        const sueldo = document.querySelector("#current-vacancy > div:nth-child(2) > p:nth-of-type(2)")?.innerText || "No Disponible";
-        const ciudadModalidad = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:first-child > p")?.innerText || "No Disponible";
-        const horario = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:nth-child(2) > p")?.innerText || "No Disponible";
-        const idioma = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(2) > div:nth-child(3) > p")?.innerText || "No Disponible";
-        const requisitos = document.querySelector("#current-vacancy > div:nth-child(2) > div:nth-of-type(4)")?.innerText?.replace(/\n+/g, ' ') || "No Disponible";
+            return {
+                titulo,
+                sueldo,
+                ciudadModalidad,
+                horario,
+                idioma,
+                requisitos
+            };
+        });
 
-
-
+        await pagina.close();
+        return datos;
+      } catch (error) {
+        console.log(`Error procesando vacante ${vacanteUrl}:`, error.message);
+        await pagina.close();
         return {
-            titulo,
-            sueldo,
-            ciudadModalidad,
-            horario,
-            idioma,
-            requisitos
+          titulo: "Error al cargar",
+          sueldo: "No Disponible",
+          ciudadModalidad: "No Disponible",
+          horario: "No Disponible",
+          idioma: "No Disponible",
+          requisitos: "No Disponible"
         };
-    })
+      }
+    });
 
-    dataVacantes.push(datos);
-    // console.log(datos)
-
-    navegador.close()
+    const batchResults = await Promise.all(batchPromises);
+    dataVacantes.push(...batchResults);
+    
+    console.log(`Procesadas ${Math.min(i + batchSize, vacantesArray.length)} de ${vacantesArray.length} vacantes`);
   }
+
+  await navegadorDetalles.close();
 
   const nombreArchivo = `vacantes-${busquedaVacante}`;
 

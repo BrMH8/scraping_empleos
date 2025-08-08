@@ -8,7 +8,11 @@ import {crearArchivoExcel} from "./utils/crearArchivoExcel.js";
 import { crearArchivoPdf } from "./utils/crearArchivoPdf.js";
 
 const app = express();
-app.use(cors('https://front-empleos-khaki.vercel.app/'));
+app.use(cors( {
+    origin: [
+    'http://localhost:3000',
+    'https://front-empleos-khaki.vercel.app'
+  ]}));
 app.use(express.json());
 
 app.get("/api/vacantes", async (req, res) => {

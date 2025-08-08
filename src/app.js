@@ -195,17 +195,18 @@ async function buscarVacantes(busquedaVacante) {
 
   await navegadorDetalles.close();
 
-  const nombreArchivo = `vacantes-${busquedaVacante}`;
 
-  //Crear archivo JSON
-  crearArchivoJson(dataVacantes, `${nombreArchivo}.json`);
-
-  //crear archivo CSV
-  crearArchivoCsv(dataVacantes, `${nombreArchivo}.csv`);
-  //crear archivo Excel
-  crearArchivoExcel(dataVacantes, `${nombreArchivo}.xlsx`);
-  // crear archivo PDF
-  crearArchivoPdf(dataVacantes, `${nombreArchivo}.pdf`);
 
   return dataVacantes;
 }
+  // const nombreArchivo = `vacantes-${busquedaVacante}`;
+
+  // //Crear archivo JSON
+  // crearArchivoJson(dataVacantes, `${nombreArchivo}.json`);
+
+  // //crear archivo CSV
+  // crearArchivoCsv(dataVacantes, `${nombreArchivo}.csv`);
+  // //crear archivo Excel
+  // crearArchivoExcel(dataVacantes, `${nombreArchivo}.xlsx`);
+  // // crear archivo PDF
+  // crearArchivoPdf(dataVacantes, `${nombreArchivo}.pdf`);

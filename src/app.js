@@ -74,7 +74,10 @@ async function buscarVacantes(busquedaVacante) {
     const elementos = Array.from(document.querySelectorAll(".hl-vacancy-card"));
 
     return elementos.map((el) => {
-      const enlace = el.getAttribute("href") || "Sin enlace";
+      let enlace = el.getAttribute("href") || "Sin enlace";
+      if (enlace && !enlace.startsWith("http")) {
+        enlace = "https://hireline.io" + enlace;
+      }
       return enlace;
     });
   });
@@ -101,7 +104,10 @@ async function buscarVacantes(busquedaVacante) {
         );
 
         return elementos.map((el) => {
-          const enlace = el.getAttribute("href") || "Sin enlace";
+          let enlace = el.getAttribute("href") || "Sin enlace";
+          if (enlace && !enlace.startsWith("http")) {
+            enlace = "https://hireline.io" + enlace;
+          }
           return enlace;
         });
       });

@@ -20,15 +20,15 @@ app.get("/api/vacantes", async (req, res) => {
     try {
         const dataVacantes = await buscarVacantes(busquedaVacante);
         // Filtrar resultados por la palabra clave buscada
-        const busquedaLower = busquedaVacante.toLowerCase();
-        const dataVacantesFiltradas = dataVacantes.filter(vacante => {
-            return (
-                (vacante.titulo && vacante.titulo.toLowerCase().includes(busquedaLower)) ||
-                (vacante.requisitos && vacante.requisitos.toLowerCase().includes(busquedaLower)) ||
-                (vacante.ciudadModalidad && vacante.ciudadModalidad.toLowerCase().includes(busquedaLower))
-            );
-        });
-        res.status(200).json(dataVacantesFiltradas); // Solo el array filtrado
+        // const busquedaLower = busquedaVacante.toLowerCase();
+        // const dataVacantesFiltradas = dataVacantes.filter(vacante => {
+        //     return (
+        //         (vacante.titulo && vacante.titulo.toLowerCase().includes(busquedaLower)) ||
+        //         (vacante.requisitos && vacante.requisitos.toLowerCase().includes(busquedaLower)) ||
+        //         (vacante.ciudadModalidad && vacante.ciudadModalidad.toLowerCase().includes(busquedaLower))
+        //     );
+        // });
+        res.status(200).json(dataVacantes); // Solo el array filtrado
     } catch (error) { 
         console.error("Error al buscar vacantes:", error);
         res.status(500).json({ error: "Error al buscar vacantes." });

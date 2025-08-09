@@ -16,16 +16,24 @@ app.use(cors( {
 app.use(express.json());
 
 app.get("/api/vacantes", async (req, res) => {
-    const busquedaVacante = req.query.busqueda || "php"; // Valor por defecto si no se proporciona
+    const busquedaVacante = req.query.busqueda || "php";
     try {
         const dataVacantes = await buscarVacantes(busquedaVacante);
-        res.status(200).json({ data: dataVacantes, message: "Vacantes encontradas y archivos creados." });
+        // Filtrar resultados por la palabra clave buscada
+        const busquedaLower = busquedaVacante.toLowerCase();
+        const dataVacantesFiltradas = dataVacantes.filter(vacante => {
+            return (
+                (vacante.titulo && vacante.titulo.toLowerCase().includes(busquedaLower)) ||
+                (vacante.requisitos && vacante.requisitos.toLowerCase().includes(busquedaLower)) ||
+                (vacante.ciudadModalidad && vacante.ciudadModalidad.toLowerCase().includes(busquedaLower))
+            );
+        });
+        res.status(200).json(dataVacantesFiltradas); // Solo el array filtrado
     } catch (error) { 
         console.error("Error al buscar vacantes:", error);
         res.status(500).json({ error: "Error al buscar vacantes." });
     }
-  }
-)
+});
 
 const PORT = process.env.PORT || 3000;
 
